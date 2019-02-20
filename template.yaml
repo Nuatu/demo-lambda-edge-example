@@ -8,6 +8,8 @@ Resources:
         DefaultCacheBehavior:
           Compress: true
           ForwardedValues:
+            Headers:
+              - CloudFront-Viewer-Country
             Cookies:
               Forward: none
             QueryString: false
@@ -15,20 +17,15 @@ Resources:
           ViewerProtocolPolicy: redirect-to-https
           LambdaFunctionAssociations:
             - EventType: origin-request
-              LambdaFunctionARN: !GetAtt edgeFunction56013FE4.VersionArn
+              LambdaFunctionARN: !GetAtt edgeFunction.VersionArn
+        DefaultRootObject: index.html
         Enabled: true
-        PriceClass: PriceClass_100
+        PriceClass: PriceClass_200
         Origins:
-          - DomainName: !GetAtt objectStore98235715.DomainName
+          - DomainName: !GetAtt hostBucket.DomainName
             Id: StackeryCDN
             S3OriginConfig:
               OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${cdn21D6041FOriginAccessIdentity}
-  objectStore98235715:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub ${AWS::StackName}-objectstore98235715
-    Metadata:
-      StackeryName: Default
   cdn21D6041FOriginAccessIdentity:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
     Properties:
@@ -37,7 +34,7 @@ Resources:
   cdn21D6041FBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !Ref objectStore98235715
+      Bucket: !Ref hostBucket
       PolicyDocument:
         Statement:
           - Effect: Allow
@@ -46,38 +43,26 @@ Resources:
             Action: s3:GetObject
             Resource: !Sub
               - ${BucketArn}/*
-              - BucketArn: !GetAtt objectStore98235715.Arn
-  edgeFunction56013FE4:
+              - BucketArn: !GetAtt hostBucket.Arn
+  edgeFunction:
     Type: Custom::StackeryEdgeFunction
     Properties:
       ServiceToken: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:stackery-agent-commander
-      FunctionName: !Sub ${AWS::StackName}-edgeFunction56013FE4
+      FunctionName: !Sub ${AWS::StackName}-edgeFunction
       Description: !Sub
         - Stackery Stack ${StackeryStackTagName} Environment ${StackeryEnvironmentTagName} Function ${ResourceName}
-        - ResourceName: edgeFunction56013FE4
+        - ResourceName: edgeFunction
       Runtime: nodejs8.10
-      CodeUri: src/edgeFunction56013FE4
+      CodeUri: src/edgeFunction
       Handler: index.handler
       MemorySize: 3008
       Timeout: 30
       Tracing: Active
-      Role: !GetAtt edgeFunction56013FE4Role.Arn
-      Environment:
-        Variables:
-          BUCKET_NAME_BR: !Ref objectStoreE569BCB9
-          BUCKET_ARN_BR: !GetAtt objectStoreE569BCB9.Arn
-          BUCKET_NAME_AU: !Ref objectStore5A42C36D
-          BUCKET_ARN_AU: !GetAtt objectStore5A42C36D.Arn
-          BUCKET_NAME_EU: !Ref objectStore2621687C
-          BUCKET_ARN_EU: !GetAtt objectStore2621687C.Arn
-          BUCKET_NAME_US: !Ref objectStore513D0D9
-          BUCKET_ARN_US: !GetAtt objectStore513D0D9.Arn
-          BUCKET_NAME_SG: !Ref objectStore437C36A5
-          BUCKET_ARN_SG: !GetAtt objectStore437C36A5.Arn
-  edgeFunction56013FE4Role:
+      Role: !GetAtt edgeFunctionRole.Arn
+  edgeFunction4Role:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-edgeFunction56013FE4
+      RoleName: !Sub ${AWS::StackName}-edgeFunction
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -90,117 +75,16 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
-      Policies:
-        - PolicyName: StackeryPolicy-objectStoreE569BCB9
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:ListBucket
-                  - s3:GetBucketLocation
-                  - s3:GetObjectVersion
-                  - s3:PutObject
-                  - s3:GetLifecycleConfiguration
-                  - s3:PutLifecycleConfiguration
-                Resource:
-                  - !Sub arn:${AWS::Partition}:s3:::${objectStoreE569BCB9}
-                  - !Sub arn:${AWS::Partition}:s3:::${objectStoreE569BCB9}/*
-        - PolicyName: StackeryPolicy-objectStore5A42C36D
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:ListBucket
-                  - s3:GetBucketLocation
-                  - s3:GetObjectVersion
-                  - s3:PutObject
-                  - s3:GetLifecycleConfiguration
-                  - s3:PutLifecycleConfiguration
-                Resource:
-                  - !Sub arn:${AWS::Partition}:s3:::${objectStore5A42C36D}
-                  - !Sub arn:${AWS::Partition}:s3:::${objectStore5A42C36D}/*
-        - PolicyName: StackeryPolicy-objectStore2621687C
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:ListBucket
-                  - s3:GetBucketLocation
-                  - s3:GetObjectVersion
-                  - s3:PutObject
-                  - s3:GetLifecycleConfiguration
-                  - s3:PutLifecycleConfiguration
-                Resource:
-                  - !Sub arn:${AWS::Partition}:s3:::${objectStore2621687C}
-                  - !Sub arn:${AWS::Partition}:s3:::${objectStore2621687C}/*
-        - PolicyName: StackeryPolicy-objectStore513D0D9
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:ListBucket
-                  - s3:GetBucketLocation
-                  - s3:GetObjectVersion
-                  - s3:PutObject
-                  - s3:GetLifecycleConfiguration
-                  - s3:PutLifecycleConfiguration
-                Resource:
-                  - !Sub arn:${AWS::Partition}:s3:::${objectStore513D0D9}
-                  - !Sub arn:${AWS::Partition}:s3:::${objectStore513D0D9}/*
-        - PolicyName: StackeryPolicy-objectStore437C36A5
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:ListBucket
-                  - s3:GetBucketLocation
-                  - s3:GetObjectVersion
-                  - s3:PutObject
-                  - s3:GetLifecycleConfiguration
-                  - s3:PutLifecycleConfiguration
-                Resource:
-                  - !Sub arn:${AWS::Partition}:s3:::${objectStore437C36A5}
-                  - !Sub arn:${AWS::Partition}:s3:::${objectStore437C36A5}/*
-  objectStoreE569BCB9:
+  hostBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-objectstoree569bcb9
+      BucketName: !Sub ${AWS::StackName}-hostbucket
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
     Metadata:
-      StackeryName: BR
-  objectStore5A42C36D:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub ${AWS::StackName}-objectstore5a42c36d
-    Metadata:
-      StackeryName: AU
-  objectStore2621687C:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub ${AWS::StackName}-objectstore2621687c
-    Metadata:
-      StackeryName: EU
-  objectStore513D0D9:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub ${AWS::StackName}-objectstore513d0d9
-    Metadata:
-      StackeryName: US
-  objectStore437C36A5:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub ${AWS::StackName}-objectstore437c36a5
-    Metadata:
-      StackeryName: SG
+      StackeryName: HostBucket
 Parameters:
   StackeryStackTagName:
     Type: String
