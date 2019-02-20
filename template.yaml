@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Resources:
-  cdn21D6041F:
+  cdn:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
@@ -25,13 +25,13 @@ Resources:
           - DomainName: !GetAtt hostBucket.DomainName
             Id: StackeryCDN
             S3OriginConfig:
-              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${cdn21D6041FOriginAccessIdentity}
-  cdn21D6041FOriginAccessIdentity:
+              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${cdnOriginAccessIdentity}
+  cdnOriginAccessIdentity:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
     Properties:
       CloudFrontOriginAccessIdentityConfig:
         Comment: Stackery
-  cdn21D6041FBucketPolicy:
+  cdnBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
       Bucket: !Ref hostBucket
@@ -39,7 +39,7 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              AWS: !Sub arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${cdn21D6041FOriginAccessIdentity}
+              AWS: !Sub arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${cdnOriginAccessIdentity}
             Action: s3:GetObject
             Resource: !Sub
               - ${BucketArn}/*
