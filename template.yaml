@@ -59,7 +59,7 @@ Resources:
       Timeout: 30
       Tracing: Active
       Role: !GetAtt edgeFunctionRole.Arn
-  edgeFunction4Role:
+  edgeFunctionRole:
     Type: AWS::IAM::Role
     Properties:
       RoleName: !Sub ${AWS::StackName}-edgeFunction
