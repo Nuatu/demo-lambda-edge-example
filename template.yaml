@@ -55,7 +55,7 @@ Resources:
       Runtime: nodejs8.10
       CodeUri: src/edgeFunction
       Handler: index.handler
-      MemorySize: 3008
+      MemorySize: 1024
       Timeout: 30
       Tracing: Active
       Role: !GetAtt edgeFunctionRole.Arn
